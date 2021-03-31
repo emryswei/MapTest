@@ -44,4 +44,7 @@ dependencies {
     implementation files('libs/odgnss_service_lib_v2.6.jar')
 
     implementation 'org.osmdroid:osmdroid-android:6.1.10'
+
+    implementation "com.google.android.gms:play-services-location:15.0.1"
+
 }
