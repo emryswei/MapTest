@@ -123,7 +123,6 @@ public class MainActivity extends FragmentActivity implements LocationListener {
                 // WRITE_EXTERNAL_STORAGE is required in order to show the map
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
         });
-
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if (locationManager.isLocationEnabled()) {
             Criteria criteria = new Criteria();
