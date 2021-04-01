@@ -112,33 +112,50 @@ public class MainActivity extends FragmentActivity implements LocationListener {
         map.setMultiTouchControls(true);
 
         IMapController mapController = map.getController();
-        mapController.setZoom(16.5);
+        mapController.setZoom(3);
 
         requestPermissionsIfNecessary(new String[]{
-                // if you need to show the current location, uncomment the line below
                 Manifest.permission.ACCESS_FINE_LOCATION,
-                // WRITE_EXTERNAL_STORAGE is required in order to show the map
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
         });
 
-        myLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(this.getApplicationContext()), map);
-        myLocationOverlay.enableMyLocation();
-        map.getOverlays().add(this.myLocationOverlay);
-
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
-        if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)){
+        if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
             Criteria criteria = new Criteria();
-            String locationProvider = locationManager.getBestProvider(criteria, true);
-            Location location = locationManager.getLastKnownLocation(locationProvider);
+            String bestProvider = locationManager.getBestProvider(criteria, true);
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                        Manifest.permission.ACCESS_COARSE_LOCATION)) {
+                    return;
+                }
+                //请求权限
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+                        1);
+                return;
+            }
+            Location location = locationManager.getLastKnownLocation(bestProvider);
             if(location != null){
                 double latitude = location.getLatitude();
                 double longitude = location.getLongitude();
                 Log.e("Laaaaaa", String.valueOf(latitude));
                 Log.e("Loooooo", String.valueOf(longitude));
             }
-            locationManager.requestLocationUpdates(locationProvider, 2000, 0, this);
+            locationManager.requestLocationUpdates(bestProvider, 5000, 0, this);
         }
+
+        myLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(this.getApplicationContext()), map);
+        myLocationOverlay.enableMyLocation();
+        map.getOverlays().add(this.myLocationOverlay);
+
     }
 
     private void requestPermissionsIfNecessary(String[] strings) {
