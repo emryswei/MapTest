@@ -9,6 +9,8 @@ import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.IntentFilter;
 import android.content.pm.PermissionInfo;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Address;
 import android.location.Criteria;
 import android.location.Location;
@@ -94,14 +96,10 @@ public class MainActivity extends FragmentActivity implements LocationListener {
         }
     };
 
-
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
 
         Context ctx = getApplicationContext();
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
@@ -112,45 +110,34 @@ public class MainActivity extends FragmentActivity implements LocationListener {
 
         map.setBuiltInZoomControls(true);
         map.setMultiTouchControls(true);
-        map.getTileProvider().getTileCache().setAutoEnsureCapacity(true);
 
         IMapController mapController = map.getController();
         mapController.setZoom(16.5);
 
-        requestPermissionsIfNecessary(new String[] {
+        requestPermissionsIfNecessary(new String[]{
                 // if you need to show the current location, uncomment the line below
                 Manifest.permission.ACCESS_FINE_LOCATION,
                 // WRITE_EXTERNAL_STORAGE is required in order to show the map
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
         });
+
+        myLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(this.getApplicationContext()), map);
+        myLocationOverlay.enableMyLocation();
+        map.getOverlays().add(this.myLocationOverlay);
+
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        if (locationManager.isLocationEnabled()) {
+
+        if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)){
             Criteria criteria = new Criteria();
-            String provider = locationManager.getBestProvider(criteria, true);
-            Location location = locationManager.getLastKnownLocation(provider);
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
-                return;
+            String locationProvider = locationManager.getBestProvider(criteria, true);
+            Location location = locationManager.getLastKnownLocation(locationProvider);
+            if(location != null){
+                double latitude = location.getLatitude();
+                double longitude = location.getLongitude();
+                Log.e("Laaaaaa", String.valueOf(latitude));
+                Log.e("Loooooo", String.valueOf(longitude));
             }
-            locationManager.requestLocationUpdates(provider, 1000, 10, this);
-
-            myLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(this.getApplicationContext()), map);
-            myLocationOverlay.enableMyLocation();
-            map.getOverlays().add(this.myLocationOverlay);
-
-
-            double a = location.getLatitude();
-            double b = location.getLongitude();
-            Log.v("laaaa", String.valueOf(a));
-            Log.v("loooo", String.valueOf(b));
-
-
+            locationManager.requestLocationUpdates(locationProvider, 2000, 0, this);
         }
     }
 
@@ -175,5 +162,6 @@ public class MainActivity extends FragmentActivity implements LocationListener {
     public void onProviderDisabled(@NonNull String provider) {
         Log.d("Latitude","disable");
     }
+
 
 }
