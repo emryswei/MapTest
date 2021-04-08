@@ -75,7 +75,7 @@ public class MainActivity extends FragmentActivity implements LocationListener {
 
     private MapView map;
     private MyLocationNewOverlay myLocationOverlay;
-
+    private static final int REQUEST_LOCATION = 1;
 
     // IMEI -- 國際行動裝置辨識碼，相當於手機的身分證
     // 1. Collect location data        app --> sdk
@@ -105,14 +105,14 @@ public class MainActivity extends FragmentActivity implements LocationListener {
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
 
         map = (MapView) findViewById(R.id.map);
-        map.setTileSource(TileSourceFactory.MAPNIK);
+        map.setTileSource(TileSourceFactory.MAPNIK);    // 用MAPNIK方式渲染地图
         map.setTilesScaledToDpi(true);
 
         map.setBuiltInZoomControls(true);
         map.setMultiTouchControls(true);
 
         IMapController mapController = map.getController();
-        mapController.setZoom(3);
+        mapController.setZoom(18.5);
 
         requestPermissionsIfNecessary(new String[]{
                 Manifest.permission.ACCESS_FINE_LOCATION,
@@ -144,10 +144,7 @@ public class MainActivity extends FragmentActivity implements LocationListener {
             }
             Location location = locationManager.getLastKnownLocation(bestProvider);
             if(location != null){
-                double latitude = location.getLatitude();
-                double longitude = location.getLongitude();
-                Log.e("Laaaaaa", String.valueOf(latitude));
-                Log.e("Loooooo", String.valueOf(longitude));
+                showLocation(location);
             }
             locationManager.requestLocationUpdates(bestProvider, 5000, 0, this);
         }
@@ -157,6 +154,17 @@ public class MainActivity extends FragmentActivity implements LocationListener {
         map.getOverlays().add(this.myLocationOverlay);
 
     }
+
+    public void showLocation(Location location){
+        if(location != null) {
+            changeLocation(location.getLatitude(), location.getLongitude());
+        }
+    }
+
+    public void changeLocation(double latitude, double longitude){
+        map.setExpectedCenter(new GeoPoint(latitude, longitude));
+    }
+
 
     private void requestPermissionsIfNecessary(String[] strings) {
     }
