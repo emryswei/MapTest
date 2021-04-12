@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PermissionInfo;
 import android.graphics.Bitmap;
@@ -24,6 +25,7 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.odgnss.android.sdk.lib.client.LogoutClient;
 import com.odgnss.android.sdk.lib.common.Constants;
+import com.odgnss.android.sdk.lib.common.LogData;
 import com.odgnss.android.sdk.lib.log.Logger;
 import com.odgnss.android.sdk.lib.utils.ServiceUtil;
 import com.odgnss.android.sdk.lib.utils.SetupUtil;
@@ -68,6 +70,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 public class MainActivity extends FragmentActivity implements LocationListener {
 //public class MainActivity extends ActivityCompat implements LocationListener {
@@ -95,6 +98,9 @@ public class MainActivity extends FragmentActivity implements LocationListener {
             Logger.Log("onCoreServiceDisconnected()" + name.getClassName());
         }
     };
+
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -146,12 +152,26 @@ public class MainActivity extends FragmentActivity implements LocationListener {
             if(location != null){
                 showLocation(location);
             }
-            locationManager.requestLocationUpdates(bestProvider, 5000, 0, this);
+            locationManager.requestLocationUpdates(bestProvider, 1000, 50, this);
         }
 
         myLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(this.getApplicationContext()), map);
         myLocationOverlay.enableMyLocation();
         map.getOverlays().add(this.myLocationOverlay);
+
+
+
+
+
+
+
+        // Register receiver
+        LocalBroadcastManager.getInstance(this).registerReceiver(mCoreMessageLogReceiver, new IntentFilter(Constants.BROADCAST_UPDATE_LOG));
+        LocalBroadcastManager.getInstance(this).registerReceiver(mCoreMessageConfigReceiver, new IntentFilter(Constants.BROADCAST_UPDATE_CONFIG));
+        LocalBroadcastManager.getInstance(this).registerReceiver(mCoreMessageStopReceiver, new IntentFilter(Constants.BROADCAST_STOP_SERVICE));
+        LocalBroadcastManager.getInstance(this).registerReceiver(mCoreMessageResponseReceiver, new IntentFilter(Constants.BROADCAST_SERVER_RESPONSE));
+
+
 
     }
 
